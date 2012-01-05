@@ -1,0 +1,242 @@
+
+<html>
+<style>
+body {
+  background: black;
+  height: 200px;
+  overflow: hidden;
+}
+.point {
+ width: 1px;
+ height: 1px;
+}
+.message {
+  max-width: 200px;
+  font-family: sans;
+}
+.star {
+  background: white;
+  position:absolute;
+  z-index: 30;
+}
+</style>
+
+<script src="./vector.js"></script>
+
+<!--
+  stars move away from the center at a speed proportional to thier closeness to the center
+  and thier distance (amount of time they have been on screen)
+  
+  currently, this data is munged, refactor to make starfields easier to make.
+  
+  key data:
+  
+    lifespan: time it should be on screen for ... 
+      need to know "progress".
+
+    get smoother animations with timers...
+-->
+
+<body>
+</body>
+<script>
+
+//  console.error(window.innerWidth, window.innerHeight)
+
+var maxH = window.outerHeight
+  , maxW = window.outerWidth
+  , messages = []
+  , waiting = []
+  ;
+
+var N = 500, S = 0.04, I = 20, screenDist = 100;
+
+function css (obj, props) {
+  for(var k in props) {
+    obj.style.setProperty(k, props[k])
+  }
+}
+
+function Star (origin, velocity) {
+  this.velocity = velocity
+  this.origin = origin
+}
+Star.prototype.move = function (timeslice) {
+
+  this.origin.add(new Vector(this.velocity), timeslice)
+}
+Star.prototype.draw = function () {
+
+  var coord = new Vector(this.origin).add(this.origin.z / screenDist)
+
+  if(star.element)
+    css(star.element, {
+      left: coord.x + 'px', 
+      top: coord.y + 'px'
+      //width: //figure out correct amount to scale by...
+      //height: 
+    })
+
+}
+
+
+  function random(max) { 
+    return Math.ceil(max*Math.random()); 
+  }
+
+  function reset() {
+    var star = this
+    star.x = random(maxW)
+    star.y = random(maxH)
+    css(star, {
+        top: star.y+'px'
+      , left: star.y+'px' 
+      , width: '0px'
+      , height: '0px'
+    })
+    star.lifespan = 1000;
+  }
+
+  function px(n) {
+    Math.ceil(n) + 'px'
+  }
+
+  function resetMessage() {
+    var star = this
+    star.x = random(maxW / 2) + maxW / 4
+    star.y = random(maxH / 2) + maxH / 4
+    css(star, { 
+      top: star.y+'px'
+    , left: star.y+'px'
+    , 'font-size': '0px'
+      , width: '1px'
+      , height: '1px'
+    , background: ['cyan', 'magenta', 'pink', 'yellow'][Math.floor(Math.random()*4)]
+    })
+    star.lifespan = 1000;
+    star.state = 'live'
+    if(messages.length) {
+      star.innerHTML = messages.shift() || '?'
+    } else {
+      star.innerHTML = '?'
+      waiting.push(star)
+    }
+  }
+
+  function moveStar(x, y, scale) {
+  
+    var star = this
+    star.x = star.x + (x*(1 - scale)*S)
+    star.y = star.y + (y*(1 - scale)*S)
+
+    css(star, {
+        top:    Math.round(star.y) + 'px'
+      , left:   Math.round(star.x) + 'px'
+      , width:  Math.round(5*(1-scale)) + 'px'
+      , height: Math.round(5*(1-scale)) + 'px'
+      })
+  }
+
+  function moveMessage(x, y, scale) {
+  
+    var star = this
+    var state = (star.state == 'dead' ? 20 : 1)
+    star.x = star.x + (x*(1 - scale)*S*state)
+    star.y = star.y + (y*(1 - scale)*S*state)
+
+    
+    star.rotate = star.state == 'dead' ? (star.rotate || 0) + 10 : 0
+
+    var size = 20 * (1-scale)
+    var w =   200 * (1-scale)
+
+    css(star, {
+        top:    (Math.round(star.y) - w) + 'px'
+      , left:   (Math.round(star.x) - w) + 'px'
+      //, width:  Math.round(10 + 50*(1-scale)) + 'px'
+      //, height: Math.round(10 + 50*(1-scale)) + 'px'
+      //, opacity: 1 - scale
+      , 'font-size': size + 'px'
+      , width: w + 'px'
+      , height: w + 'px'
+      , '-webkit-transform': 'rotate('+star.rotate+'deg)'
+      , 'z-index': Math.ceil(20 * (1-scale))
+        //star.offsetWidth >= 200 ? 20 : size + 'px'
+      })
+
+  }
+
+  function createStar() {
+    var star = document.createElement('div')
+    star.classList.add('star')
+    star.classList.add('point')
+
+    star.reset = reset
+    star.move = moveStar
+    star.reset()
+    return star
+  }
+  function createMessage() {
+    var star = document.createElement('div')
+    star.classList.add('star')
+    star.classList.add('message')
+    star.reset = resetMessage
+    star.move = moveMessage
+    star.reset()
+    star.onclick = function () {
+      star.state = 'dead'
+    }
+    return star
+  }
+
+  var stars = []
+  for (var i = 0; i < N; i ++) {
+    var star = createStar()
+    stars.push(star)
+    document.body.appendChild(star)
+  }
+  for (var i = 0; i < 20; i ++) {
+    var star = createMessage()
+    stars.push(star)
+    document.body.appendChild(star)
+  }
+
+  function moveStars() {
+    //accelerate outwards proportionally to the distance from the center
+    stars.forEach(function (star) {
+      if(star.lifespan > 0) star.lifespan -= 10
+      if(star.x < 0 || star.x > maxW || star.y < 0 || star.y> maxH) {
+        star.reset()
+      } else {
+        star.move(star.x - (maxW/2),star.y - (maxH/2), star.lifespan/1000)
+      }
+    })
+  }
+  setInterval(moveStars, I)
+
+function newTweet (tweet) {
+  var m = tweet.from_user + ': ' + tweet.text
+  if(waiting.length) {
+    waiting.shift().innerHTML = m
+  } else {
+    messages.push(m)
+  }
+}
+
+function getTweets(query) {
+  var script = document.createElement('script')
+    script.src = 'http://search.twitter.com/search.json' + query + '&callback=newTweets'
+
+  document.head.appendChild(script)
+}
+function newTweets(data) {
+  data.results.forEach(newTweet)
+  setTimeout(function () {
+    getTweets(data.next_page)
+  }, 1000)
+}
+getTweets('?q=iphone')
+
+</script>
+</html>
+</html>
