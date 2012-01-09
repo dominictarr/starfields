@@ -1,0 +1,84 @@
+
+
+<!doctype html>
+<html>
+  <head>
+    <title>IsoCanvas</title>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        scroll: none;
+      }
+      
+      body {
+        background: #eee;
+        padding: 1em;
+      }
+      
+      #c {
+        background: #000;
+      }
+      
+      #r {
+        float: left;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+  </body>
+<script src="easel.js"></script>    
+<script src="./vector.js"></script>
+<script src="./boxes.js"></script>
+<script src="./starfield.js"></script>
+<script> 
+
+var canvas = document.getElementById( 'c' )
+var stage = new Stage(canvas)
+canvas.height = window.outerHeight
+canvas.width = window.outerWidth 
+
+function createStar () {
+  var g = new Graphics()
+  g.setStrokeStyle(1)
+  g.beginFill(Graphics.getRGB(255,255,255,1));
+  
+  g.drawRect(0,0, 10, 10);
+  return new Shape(g);
+}
+
+Star.prototype.draw = function (screen) {
+
+  if(!screen.onScreen || this.origin.z < 0)
+    this.offScreen()
+
+  this.element.x = screen.coord.x
+  this.element.y = screen.coord.y
+  this.element.scaleX = screen.size.x/this.size.x
+  this.element.scaleY = screen.size.y/this.size.y
+}
+
+Star.prototype.offScreen = function () {
+  this.origin = new Vector(random2(10000),random2(5000),15000)
+}
+
+createStars(500, function init () {
+
+  var star = new Star(randPosition(), new Vector(0,0,-100))
+
+  star.element = createStar()
+
+  stage.addChild(star.element)
+  
+  return star
+}, function () {
+  stage.update()
+})
+
+
+    //tell the stage to render to the canvas
+    stage.update();
+   </script>
+</html>

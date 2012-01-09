@@ -17,17 +17,73 @@ body {
 .star {
   background: white;
   position:absolute;
-  width: 10px;
-  height: 10px;
+  width: 1px;
+  height: 1px;
 //  z-index: 30;
 }
+/*
+.offscreen {
+
+  visibility: hidden;
+}
+.onscreen {
+
+  visibility: block;
+}*/
 
 </style>
 
 <body>
 </body>
 <script src="./vector.js"></script>
-<script src="./starfield.js">
+<script src="./boxes.js"></script>
+<script src="./starfield.js"></script>
+<script> 
+/*
+  overwrite the draw method... to update my divs
+  pass in init to createDivs and add them to document.
+*/
+
+Star.prototype.draw = function (screen) {
+
+  if(this.element) {
+    if(this.origin.z < 0) {
+      //this.element.classList.add('offscreen')
+      //this.element.classList.remove('onscreen')
+      return
+    }
+    css(this.element, { 
+      left: screen.coord.x + 'px', 
+      top: screen.coord.y + 'px',
+      width: screen.size.x + 'px', 
+      height: screen.size.y + 'px'        
+      //width: //figure out correct amount to scale by...
+      //height: 
+    })
+    if(!screen.onScreen) {
+      if('function' === typeof this.offScreen)
+       this.offScreen()
+      }
+    //  this.element.classList.remove('onscreen')
+      //this.element.classList.add('offscreen')
+  }
+}
+
+Star.prototype.offScreen = function () {
+  this.origin = new Vector(random2(10000),random2(5000),10000)
+}
+
+createStars(500, function init () {
+
+  var star = new Star(randPosition(), new Vector(0,0,-100))
+  star.element = document.createElement('div')
+  star.element.classList.add('star')
+  document.body.appendChild(star.element)  
+  
+  return star
+})
+
+
 </script>
 </html>
 </html>
