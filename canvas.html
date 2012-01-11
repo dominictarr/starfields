@@ -1,5 +1,3 @@
-
-
 <!doctype html>
 <html>
   <head>
@@ -14,7 +12,6 @@
       
       body {
         background: #eee;
-        padding: 1em;
       }
       
       #c {
@@ -40,12 +37,34 @@ var stage = new Stage(canvas)
 canvas.height = window.outerHeight
 canvas.width = window.outerWidth 
 
+//make stars slightly off-white
+function colorByte(){
+  var variance = 32;
+  return Math.floor( ( Math.random() * variance ) + ( 256 - variance ) );
+}
+
 function createStar () {
-  var g = new Graphics()
-  g.setStrokeStyle(1)
-  g.beginFill(Graphics.getRGB(255,255,255,1));
+  var g = new Graphics(), 
+      red = colorByte(),
+      green = colorByte(),
+      blue = colorByte(),
+      radius = Math.floor( Math.random() * 8 ) + 2,
+      center = radius / 2;
+      
   
-  g.drawRect(0,0, 10, 10);
+  g.setStrokeStyle(1);  
+  
+  //star  
+  g.beginFill(Graphics.getRGB(red,green,blue,1));
+  g.drawCircle( center, center, radius );
+  g.endFill();
+  
+  /*
+  //corona
+  g.beginStroke(Graphics.getRGB(red,green,blue,.25));
+  g.drawCircle( center, center, radius + 1 );
+  g.endStroke();
+  */
   return new Shape(g);
 }
 
